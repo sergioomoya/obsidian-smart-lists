@@ -1,0 +1,10 @@
+{
+	"id": "smart-lists",
+	"name": "Smart Lists",
+	"version": "0.1.0",
+	"minAppVersion": "1.0.0",
+	"description": "Tablas interactivas tipo SharePoint integradas en Markdown con tipos de campo ricos: texto, selección, fecha, persona, búsqueda y más.",
+	"author": "Sergio Moya",
+	"authorUrl": "https://github.com/sergioomoya",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,677 @@
+/* 
+ * Smart Lists - Obsidian Plugin Styles
+ * Compatible con temas claro y oscuro usando variables de Obsidian.
+ */
+
+/* ==========================================================================
+   Contenedor Principal
+   ========================================================================== */
+.sl-container {
+    border-radius: var(--radius-m);
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    margin: 1.5em 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   Barra de Título
+   ========================================================================== */
+.sl-title-bar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+}
+
+.sl-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-normal);
+}
+
+/* ==========================================================================
+   Tabla
+   ========================================================================== */
+.sl-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.sl-table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-ui-small);
+}
+.sl-thead { display: table-header-group; }
+.sl-tbody { display: table-row-group; }
+.sl-tr { display: table-row; }
+
+.sl-row {
+    display: table-row;
+    transition: background-color 0.15s ease;
+}
+
+.sl-row:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.sl-row:hover .sl-td-actions {
+    opacity: 1;
+}
+
+.sl-th {
+    display: table-cell;
+    text-align: left;
+    padding: 8px 12px !important;
+    background-color: var(--background-secondary);
+    border-bottom: 2px solid var(--background-modifier-border);
+    font-weight: 600;
+    white-space: nowrap;
+    position: relative;
+    user-select: none;
+    cursor: pointer;
+    vertical-align: middle;
+    min-width: 120px;
+    color: var(--text-normal);
+}
+.sl-th:first-child {
+    padding-left: 32px !important;
+    min-width: 120px !important;
+}
+.sl-th:hover {
+    z-index: 20;
+}
+
+.sl-td {
+    display: table-cell;
+    padding: 4px 8px !important;
+    border-bottom: 1px solid var(--background-modifier-border);
+    vertical-align: middle;
+    min-width: 120px;
+    color: var(--text-normal);
+}
+.sl-td:first-child {
+    padding-left: 32px !important;
+    min-width: 120px !important;
+    overflow: visible !important;
+}
+
+.sl-th-row-num,
+.sl-td-row-num {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    color: var(--text-faint);
+}
+
+.sl-td-row-num {
+    font-size: 0.85em;
+}
+
+.sl-td-actions {
+    display: table-cell;
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    vertical-align: middle;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+/* ==========================================================================
+   Cabeceras de Columna
+   ========================================================================== */
+.sl-header-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sl-header-icon {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    display: flex;
+}
+
+.sl-header-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Celdas e Input Editable
+   ========================================================================== */
+.sl-cell {
+    width: 100%;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+}
+
+.sl-cell-text {
+    cursor: text;
+    padding: 2px 4px;
+    border-radius: var(--radius-s);
+    transition: background-color 0.15s ease;
+    width: 100%;
+    white-space: pre-wrap;
+    min-height: 20px;
+}
+
+.sl-cell-text:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.sl-cell-empty {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+.sl-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--text-normal);
+    padding: 2px 4px;
+}
+
+.sl-input-editing {
+    /* Simulando rgba con la variable accent que en Obsidian suele tener su contraparte rgb o se asume el color base */
+    background-color: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+    outline: 2px solid var(--interactive-accent);
+}
+
+/* ==========================================================================
+   Pills (Select / MultiSelect)
+   ========================================================================== */
+.sl-pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.sl-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    /* El color de fondo se define en línea mediante JS, el texto se calcula para contraste */
+}
+
+.sl-pill:hover {
+    filter: brightness(0.9);
+}
+
+/* ==========================================================================
+   Dropdowns y Autocomplete
+   ========================================================================== */
+@keyframes sl-dropdown-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sl-dropdown,
+.sl-autocomplete,
+.sl-context-menu {
+    position: fixed;
+    z-index: 1000;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    min-width: 160px;
+    max-height: 240px;
+    overflow-y: auto;
+    animation: sl-dropdown-in 0.12s ease-out;
+}
+
+.sl-dropdown-item,
+.sl-autocomplete-item,
+.sl-context-menu-item {
+    padding: 6px 12px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-normal);
+}
+
+.sl-dropdown-item:hover,
+.sl-autocomplete-item:hover,
+.sl-context-menu-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.sl-dropdown-item-active {
+    background-color: var(--interactive-accent);
+    color: white;
+}
+
+.sl-context-menu-danger {
+    color: #ef4444;
+}
+
+/* ==========================================================================
+   Toggle (Checkbox)
+   ========================================================================== */
+.sl-toggle {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: var(--text-faint);
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.sl-toggle-active {
+    background-color: var(--interactive-accent);
+}
+
+.sl-toggle-slider {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sl-toggle-active .sl-toggle-slider {
+    transform: translateX(16px);
+}
+
+/* ==========================================================================
+   Person / Autocomplete
+   ========================================================================== */
+.sl-person-icon {
+    margin-right: 4px;
+    color: var(--text-muted);
+}
+
+.sl-autocomplete-item-name {
+    font-weight: 500;
+}
+
+.sl-autocomplete-item-detail {
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+
+/* ==========================================================================
+   URL / Enlaces
+   ========================================================================== */
+.sl-link {
+    color: var(--interactive-accent);
+    text-decoration: none;
+}
+
+.sl-link:hover {
+    text-decoration: underline;
+}
+
+.sl-link-edit-btn {
+    margin-left: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.sl-cell:hover .sl-link-edit-btn {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Overlay
+   ========================================================================== */
+.sl-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    background-color: transparent;
+}
+
+/* ==========================================================================
+   Barra de Acciones e Interfaz de Añadir Columna
+   ========================================================================== */
+.sl-actions-bar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.sl-add-row-btn,
+.sl-add-col-btn {
+    background-color: transparent;
+    border: 1px dashed var(--background-modifier-border);
+    padding: 6px 14px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    transition: all 0.15s ease;
+}
+
+.sl-add-row-btn:hover,
+.sl-add-col-btn:hover {
+    border-color: var(--interactive-accent);
+    color: var(--interactive-accent);
+    background-color: var(--background-modifier-hover);
+}
+
+.sl-add-col-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    animation: sl-dropdown-in 0.15s ease-out;
+    width: max-content;
+    max-width: 400px;
+}
+
+.sl-add-col-form input,
+.sl-add-col-form select {
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    padding: 4px 8px;
+    border-radius: var(--radius-s);
+    font-size: 0.85em;
+    color: var(--text-normal);
+}
+
+.sl-add-col-form input:focus,
+.sl-add-col-form select:focus {
+    outline: 2px solid var(--interactive-accent);
+}
+
+.sl-add-col-form button {
+    background-color: var(--interactive-accent);
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.15s ease;
+}
+
+.sl-add-col-form button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+/* ==========================================================================
+   Botón de Eliminar Fila
+   ========================================================================== */
+.sl-row-delete-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-faint);
+    padding: 2px;
+    border-radius: var(--radius-s);
+    transition: all 0.15s ease;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sl-row-delete-btn:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* ==========================================================================
+   Iconos
+   ========================================================================== */
+.sl-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   Nuevos estilos (Filtros, Sort, Date, Flex)
+   ========================================================================== */
+
+.sl-td {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.sl-cell {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.sl-th[data-col-name="Tarea"], .sl-td[data-col-name="Tarea"] {
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+}
+
+.sl-th[data-col-name="Comentarios"], .sl-td[data-col-name="Comentarios"] {
+    width: 250px;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+.sl-date-empty::-webkit-datetime-edit {
+    color: transparent;
+}
+
+.sl-filter-menu {
+    position: fixed;
+    z-index: 1000;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    min-width: 200px;
+    max-width: 300px;
+    animation: sl-dropdown-in 0.12s ease-out;
+}
+
+.sl-filter-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+    padding: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sl-filter-checkboxes input[type="checkbox"] {
+    margin: 0;
+}
+
+.sl-btn {
+    background-color: var(--interactive-accent);
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-size: 0.85em;
+    flex: 1;
+    transition: background-color 0.15s ease;
+}
+
+.sl-btn:hover {
+    background-color: var(--interactive-accent-hover, var(--interactive-accent));
+}
+
+.sl-header-title:hover {
+    background-color: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+}
+
+/* ==========================================================================
+   Drag & Drop y Botones de Inserción (Hover)
+   ========================================================================== */
+
+/* Filas y columnas drag & drop */
+.sl-row[draggable="true"], .sl-th[draggable="true"] {
+    cursor: grab;
+}
+.sl-row[draggable="true"]:active, .sl-th[draggable="true"]:active {
+    cursor: grabbing;
+}
+.sl-row-dragging, .sl-col-dragging {
+    opacity: 0.5;
+    background-color: var(--background-modifier-hover);
+}
+.sl-row-drag-over {
+    border-bottom: 2px solid var(--interactive-accent);
+}
+.sl-col-drag-over {
+    border-right: 2px solid var(--interactive-accent);
+}
+
+/* Grabber para reordenar filas */
+.sl-drag-handle {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background-color: var(--background-modifier-hover);
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+    opacity: 0.4;
+    transition: all 0.15s ease;
+}
+.sl-row:hover .sl-drag-handle {
+    opacity: 1;
+    color: var(--interactive-accent);
+}
+.sl-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Botones flotantes (Hover) */
+.sl-insert-row-btn {
+    position: absolute;
+    bottom: -8px;
+    left: 4px;
+    width: 32px;
+    height: 16px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background-color: var(--interactive-accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    opacity: 0;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: 8px;
+}
+.sl-insert-row-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.sl-insert-col-btn {
+    position: absolute;
+    right: -10px;
+    top: 0;
+    height: 100%;
+    width: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--interactive-accent);
+    opacity: 0;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: transparent;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.sl-th:hover .sl-insert-col-btn {
+    opacity: 0.5;
+}
+.sl-th:hover .sl-insert-col-btn:hover {
+    opacity: 1;
+    color: white;
+    background-color: var(--interactive-accent);
+}
+
+/* Popup flotante de nueva columna */
+.sl-floating-col-form {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    padding: 8px;
+    border-radius: var(--radius-m);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    flex-direction: column;
+}
+
+.sl-cancel-btn {
+    background-color: transparent;
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    padding: 4px 12px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-size: 0.85em;
+    margin-top: 4px;
+    width: 100%;
+}
+.sl-cancel-btn:hover {
+    background-color: var(--background-modifier-hover);
+}

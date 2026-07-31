@@ -1,0 +1,27 @@
+{
+	"name": "smart-lists",
+	"version": "0.1.0",
+	"description": "Tablas interactivas tipo SharePoint integradas en Markdown para Obsidian.",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"lint": "eslint ."
+	},
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"table",
+		"smart-lists",
+		"sharepoint"
+	],
+	"author": "Sergio Moya",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"esbuild": "^0.25.0",
+		"obsidian": "latest",
+		"typescript": "^5.7.0"
+	}
+}
