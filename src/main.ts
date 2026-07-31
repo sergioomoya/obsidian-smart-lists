@@ -4,7 +4,7 @@ import { ColumnType, SmartListData } from './models/types';
 import { serializeSmartListJson } from './services/data.service';
 import { generateId } from './utils/id.utils';
 
-export default class SmartListPlugin extends Plugin {
+class SmartListPlugin extends Plugin {
   async onload() {
     console.log('Cargando Smart Lists Plugin');
 
@@ -49,3 +49,5 @@ export default class SmartListPlugin extends Plugin {
     console.log('Descargando Smart Lists Plugin');
   }
 }
+
+module.exports = SmartListPlugin;
