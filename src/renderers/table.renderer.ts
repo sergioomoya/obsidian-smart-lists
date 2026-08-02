@@ -35,10 +35,23 @@ export function renderSmartList(
   // Title bar
   const titleBar = createElement('div') as HTMLElement;
   titleBar.className = 'sl-title-bar';
+  titleBar.style.display = 'flex';
+  titleBar.style.alignItems = 'center';
+  titleBar.style.justifyContent = 'space-between';
+
   const title = createElement('h3') as HTMLElement;
   title.className = 'sl-title';
   title.textContent = data.title || 'Untitled Smart List';
   titleBar.appendChild(title);
+
+  const copyBtn = createElement('button') as HTMLButtonElement;
+  copyBtn.className = 'sl-btn';
+  copyBtn.innerHTML = '📋 Copiar Tabla';
+  copyBtn.title = 'Copiar tabla renderizada al portapapeles';
+  copyBtn.style.padding = '4px 8px';
+  copyBtn.style.fontSize = '12px';
+  titleBar.appendChild(copyBtn);
+
   wrapper.appendChild(titleBar);
 
   const tableWrapper = createElement('div') as HTMLElement;
@@ -345,12 +358,9 @@ export function renderSmartList(
 
   renderTableContents();
 
-  addListener(wrapper, 'copy', (e: ClipboardEvent) => {
-    const activeElement = document.activeElement;
-    if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
-      return; // allow default copy if editing text
-    }
+  renderTableContents();
 
+  addListener(copyBtn, 'click', async () => {
     let html = '<table style="border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; background-color: #1e1e1e; color: #d4d4d4; font-size: 13px; width: 100%; border: 1px solid #333;">';
     html += '<thead><tr>';
     const plainLines: string[] = [];
@@ -391,11 +401,20 @@ export function renderSmartList(
     });
     html += '</tbody></table>';
 
-    if (e.clipboardData) {
-      e.clipboardData.setData('text/html', html);
-      e.clipboardData.setData('text/plain', plainLines.join('\n'));
-      e.preventDefault();
-      e.stopPropagation();
+    try {
+      const clipboardItem = new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([plainLines.join('\n')], { type: 'text/plain' })
+      });
+      await navigator.clipboard.write([clipboardItem]);
+      
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '✅ Copiado';
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+      }, 2000);
+    } catch (err) {
+      console.error('Error copying to clipboard', err);
     }
   });
 
