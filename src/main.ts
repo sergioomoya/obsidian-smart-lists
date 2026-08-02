@@ -49,5 +49,4 @@ class SmartListPlugin extends Plugin {
     console.log('Descargando Smart Lists Plugin');
   }
 }
-
 module.exports = SmartListPlugin;
