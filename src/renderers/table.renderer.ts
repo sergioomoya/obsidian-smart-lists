@@ -79,11 +79,14 @@ export function renderSmartList(
   });
 
   const copyBtn = createElement('button') as HTMLButtonElement;
-  copyBtn.className = 'sl-btn';
-  copyBtn.innerHTML = '📋 Copiar Tabla';
+  copyBtn.className = 'sl-btn sl-btn-icon';
+  copyBtn.innerHTML = '📋';
   copyBtn.title = 'Copiar tabla renderizada al portapapeles';
   copyBtn.style.padding = '4px 8px';
   copyBtn.style.fontSize = '12px';
+  copyBtn.style.background = 'transparent';
+  copyBtn.style.border = 'none';
+  copyBtn.style.cursor = 'pointer';
   
   controlsContainer.appendChild(clearBtn);
   controlsContainer.appendChild(saveFilterBtn);
