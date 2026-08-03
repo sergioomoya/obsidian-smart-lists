@@ -5,8 +5,8 @@ import { serializeSmartListJson } from './services/data.service';
 import { generateId } from './utils/id.utils';
 import { SmartListSettings, DEFAULT_SETTINGS, SmartListSettingTab } from './settings';
 
-class SmartListPlugin extends Plugin {
-  settings: SmartListSettings;
+export default class SmartListPlugin extends Plugin {
+  settings!: SmartListSettings;
   activeUIStates = new Map<string, UIState>();
 
   async onload() {

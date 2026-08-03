@@ -32,8 +32,8 @@ export class SmartListSettingTab extends PluginSettingTab {
         .addOption('comfortable', 'Cómoda (Por defecto)')
         .addOption('compact', 'Compacta')
         .setValue(this.plugin.settings.tableDensity)
-        .onChange(async (value: 'comfortable' | 'compact') => {
-          this.plugin.settings.tableDensity = value;
+        .onChange(async (value: string) => {
+          this.plugin.settings.tableDensity = value as 'comfortable' | 'compact';
           await this.plugin.saveSettings();
         }));
 
