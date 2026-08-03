@@ -11,7 +11,6 @@
     border: 1px solid var(--background-modifier-border);
     background-color: var(--background-primary);
     margin: 1.5em 0;
-    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -22,6 +21,8 @@
     padding: 12px 16px;
     border-bottom: 1px solid var(--background-modifier-border);
     background-color: var(--background-secondary);
+    border-top-left-radius: calc(var(--radius-m) - 1px);
+    border-top-right-radius: calc(var(--radius-m) - 1px);
 }
 
 .sl-title {
@@ -36,7 +37,11 @@
    ========================================================================== */
 .sl-table-wrapper {
     overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
     width: 100%;
+    border-bottom-left-radius: calc(var(--radius-m) - 1px);
+    border-bottom-right-radius: calc(var(--radius-m) - 1px);
 }
 
 .sl-table {
