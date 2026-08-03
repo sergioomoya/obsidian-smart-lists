@@ -4,6 +4,8 @@ import { addColumn, addRow, deleteColumn, deleteRow, parseSmartListJson, renameC
 import { getAvailablePersons, getLookupValues, Person } from './services/person.service';
 import { renderSmartList } from './renderers/table.renderer';
 import { clearChildren } from './utils/dom.utils';
+import SmartListPlugin from './main';
+import { generateId } from './utils/id.utils';
 
 export class SmartListView extends MarkdownRenderChild {
   private data: SmartListData;
@@ -19,10 +21,24 @@ export class SmartListView extends MarkdownRenderChild {
     containerEl: HTMLElement,
     private source: string,
     private ctx: MarkdownPostProcessorContext,
-    private app: App
+    private plugin: SmartListPlugin
   ) {
     super(containerEl);
     this.data = parseSmartListJson(source);
+    
+    if (!this.data.id) {
+      this.data.id = generateId('tbl');
+    }
+
+    if (this.plugin.activeUIStates.has(this.data.id)) {
+      this.uiState = this.plugin.activeUIStates.get(this.data.id)!;
+    } else if (this.data.defaultUIState) {
+      this.uiState = JSON.parse(JSON.stringify(this.data.defaultUIState));
+    }
+  }
+
+  get app(): App {
+    return this.plugin.app;
   }
 
   async onload() {
@@ -63,6 +79,23 @@ export class SmartListView extends MarkdownRenderChild {
         onColumnRename: (columnId, newName) => this.handleDataChange(renameColumn(this.data, columnId, newName)),
         onRowReorder: (from, to) => this.handleDataChange(reorderRows(this.data, from, to)),
         onColumnReorder: (from, to) => this.handleDataChange(reorderColumns(this.data, from, to)),
+        onFilter: () => {
+          if (this.data.id) this.plugin.activeUIStates.set(this.data.id, this.uiState);
+        },
+        onSort: () => {
+          if (this.data.id) this.plugin.activeUIStates.set(this.data.id, this.uiState);
+        },
+        onSaveFilters: (uiState) => {
+          this.data.defaultUIState = JSON.parse(JSON.stringify(uiState));
+          this.handleDataChange(this.data);
+        },
+        onClearFilters: () => {
+          this.uiState.filters = {};
+          this.uiState.sortConfig = { columnId: '', dir: null };
+          if (this.data.id) this.plugin.activeUIStates.set(this.data.id, this.uiState);
+          this.data.defaultUIState = undefined;
+          this.handleDataChange(this.data);
+        }
       },
       this.uiState,
       this.lookupValuesMap,

@@ -77,6 +77,7 @@ export interface SmartListData {
   title: string;
   columns: ColumnDefinition[];
   rows: RowData[];
+  defaultUIState?: UIState;
 }
 
 // ─── Callbacks ──────────────────────────────────────────────────────────────
@@ -93,6 +94,8 @@ export interface TableCallbacks {
   onColumnReorder: (fromIndex: number, toIndex: number) => void;
   onSort?: (columnId: string, direction: 'asc'|'desc'|null) => void;
   onFilter?: (filters: Record<string, string[]>) => void;
+  onSaveFilters?: (uiState: UIState) => void;
+  onClearFilters?: () => void;
 }
 
 export interface UIState {

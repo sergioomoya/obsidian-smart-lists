@@ -42,13 +42,54 @@ export function renderSmartList(
   title.textContent = data.title || 'Untitled Smart List';
   titleBar.appendChild(title);
 
+  const controlsContainer = createElement('div') as HTMLElement;
+  controlsContainer.style.display = 'flex';
+  controlsContainer.style.gap = '8px';
+  controlsContainer.style.alignItems = 'center';
+
+  const clearBtn = createElement('button') as HTMLButtonElement;
+  clearBtn.className = 'sl-btn sl-btn-icon';
+  clearBtn.innerHTML = '✖️';
+  clearBtn.title = 'Limpiar filtros (Borrar filtros activos)';
+  clearBtn.style.padding = '4px 8px';
+  clearBtn.style.fontSize = '12px';
+  clearBtn.style.background = 'transparent';
+  clearBtn.style.border = 'none';
+  clearBtn.style.cursor = 'pointer';
+  addListener(clearBtn, 'click', () => {
+    if (callbacks.onClearFilters) callbacks.onClearFilters();
+  });
+
+  const saveFilterBtn = createElement('button') as HTMLButtonElement;
+  saveFilterBtn.className = 'sl-btn sl-btn-icon';
+  saveFilterBtn.innerHTML = '💾';
+  saveFilterBtn.title = 'Guardar filtro actual por defecto';
+  saveFilterBtn.style.padding = '4px 8px';
+  saveFilterBtn.style.fontSize = '12px';
+  saveFilterBtn.style.background = 'transparent';
+  saveFilterBtn.style.border = 'none';
+  saveFilterBtn.style.cursor = 'pointer';
+  addListener(saveFilterBtn, 'click', () => {
+    if (callbacks.onSaveFilters) callbacks.onSaveFilters(uiState);
+    const originalText = saveFilterBtn.innerHTML;
+    saveFilterBtn.innerHTML = '✅';
+    setTimeout(() => {
+      saveFilterBtn.innerHTML = originalText;
+    }, 2000);
+  });
+
   const copyBtn = createElement('button') as HTMLButtonElement;
   copyBtn.className = 'sl-btn';
   copyBtn.innerHTML = '📋 Copiar Tabla';
   copyBtn.title = 'Copiar tabla renderizada al portapapeles';
   copyBtn.style.padding = '4px 8px';
   copyBtn.style.fontSize = '12px';
-  titleBar.appendChild(copyBtn);
+  
+  controlsContainer.appendChild(clearBtn);
+  controlsContainer.appendChild(saveFilterBtn);
+  controlsContainer.appendChild(copyBtn);
+
+  titleBar.appendChild(controlsContainer);
 
   wrapper.appendChild(titleBar);
 
