@@ -134,6 +134,11 @@
     color: var(--text-muted);
     font-size: 0.9em;
     display: flex;
+    cursor: grab;
+}
+
+.sl-header-icon:active {
+    cursor: grabbing;
 }
 
 .sl-header-name {
@@ -549,12 +554,6 @@
    ========================================================================== */
 
 /* Filas y columnas drag & drop */
-.sl-row[draggable="true"], .sl-th[draggable="true"] {
-    cursor: grab;
-}
-.sl-row[draggable="true"]:active, .sl-th[draggable="true"]:active {
-    cursor: grabbing;
-}
 .sl-row-dragging, .sl-col-dragging {
     opacity: 0.5;
     background-color: var(--background-modifier-hover);

@@ -217,7 +217,13 @@ export function renderSmartList(
           renderTableContents();
         }
       });
-      th.draggable = true;
+      const iconSpan = th.querySelector('.sl-header-icon');
+      if (iconSpan) {
+        addListener(iconSpan as HTMLElement, 'mousedown', () => { th.draggable = true; });
+        addListener(iconSpan as HTMLElement, 'mouseup', () => { th.draggable = false; });
+        addListener(iconSpan as HTMLElement, 'mouseleave', () => { th.draggable = false; });
+      }
+
       addListener(th, 'dragstart', (e: DragEvent) => {
         if (e.dataTransfer) {
           e.dataTransfer.setData('application/json', JSON.stringify({type: 'col', index: idx}));
