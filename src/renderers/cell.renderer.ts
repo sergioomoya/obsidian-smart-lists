@@ -97,7 +97,12 @@ function renderSelectCell(container: HTMLElement, column: ColumnDefinition, valu
     pill.style.backgroundColor = selectedOption.color;
     pill.textContent = selectedOption.label;
   } else {
-    pill.textContent = value || '';
+    pill.textContent = value || 'Elegir...';
+    if (!value) {
+      pill.style.backgroundColor = 'transparent';
+      pill.style.border = '1px dashed #525252';
+      pill.style.color = '#a3a3a3';
+    }
   }
 
   addListener(pill, 'click', () => {
@@ -143,16 +148,27 @@ function renderMultiSelectCell(container: HTMLElement, column: ColumnDefinition,
   pillsContainer.className = 'sl-pills-container';
 
   const currentValues = Array.isArray(value) ? value : [];
-  currentValues.forEach(val => {
+  
+  if (currentValues.length === 0) {
     const pill = createElement('div') as HTMLElement;
     pill.className = 'sl-pill';
-    const opt = column.options?.find(o => o.label === val);
-    if (opt) {
-      pill.style.backgroundColor = opt.color;
-    }
-    pill.textContent = val;
+    pill.textContent = 'Añadir...';
+    pill.style.backgroundColor = 'transparent';
+    pill.style.border = '1px dashed #525252';
+    pill.style.color = '#a3a3a3';
     pillsContainer.appendChild(pill);
-  });
+  } else {
+    currentValues.forEach(val => {
+      const pill = createElement('div') as HTMLElement;
+      pill.className = 'sl-pill';
+      const opt = column.options?.find(o => o.label === val);
+      if (opt) {
+        pill.style.backgroundColor = opt.color;
+      }
+      pill.textContent = val;
+      pillsContainer.appendChild(pill);
+    });
+  }
 
   addListener(pillsContainer, 'click', () => {
     const dropdown = createElement('div') as HTMLElement;
