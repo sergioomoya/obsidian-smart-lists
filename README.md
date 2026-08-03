@@ -7,9 +7,12 @@ A powerful Obsidian plugin that turns raw JSON markdown blocks into rich, intera
 - 📱 **Mobile & Desktop**: Fully responsive and compatible with Obsidian Mobile.
 - 🗄️ **Database UI**: Render your data as a clean, interactive table without dealing with raw JSON.
 - 🔄 **Drag & Drop**: Reorder rows and columns easily with native drag handles.
-- 📝 **Rich Field Types**: Supports multi-line text, selects, multi-selects, dates, and people.
+- 🔍 **Filter & Sort**: Click on column headers to sort, or use the filter icon to show only specific rows.
+- 💾 **Default Filters**: Save your current filters as the default view for a specific table so it always loads the way you need it.
+- 📝 **Rich Field Types**: Supports text, numbers, selects, multi-selects, dates, checkboxes, URLs, persons (autocompletes from your vault), and lookups (fetches data from other Smart Lists).
 - 🎨 **Pill Styling**: Visualize status, priorities, and tags with colored pill indicators.
-- 📋 **Smart Clipboard**: Copy your rendered table and paste it as a fully styled HTML table in Outlook, Gmail, or Word (or as TSV in plain text editors).
+- 📋 **Smart Clipboard**: Copy your rendered table (respecting active filters) and paste it as a fully styled HTML table in Outlook, Gmail, or Word (or as TSV in plain text editors).
+- ⚙️ **Global Settings**: Customize table density and row numbers globally from the Obsidian settings tab.
 - 🛡️ **Conflict-Free**: Built with a pure `div`-based architecture (`display: table`), meaning it won't break or conflict with other table-modifying plugins (like Advanced Tables or Dynamic Wide Content).
 
 ## How to Use
