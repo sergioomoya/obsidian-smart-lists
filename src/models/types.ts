@@ -95,6 +95,11 @@ export interface TableCallbacks {
   onFilter?: (filters: Record<string, string[]>) => void;
 }
 
+export interface UIState {
+  sortConfig: { columnId: string; dir: 'asc'|'desc'|null };
+  filters: Record<string, string[]>;
+}
+
 // ─── Default Colors ─────────────────────────────────────────────────────────
 
 /** Paleta de colores predefinidos para pills de selección. */

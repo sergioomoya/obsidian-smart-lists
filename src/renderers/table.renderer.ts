@@ -1,4 +1,4 @@
-import { SmartListData, TableCallbacks, ColumnDefinition, ColumnType, COLUMN_TYPE_LABELS } from '../models/types';
+import { SmartListData, TableCallbacks, ColumnDefinition, ColumnType, COLUMN_TYPE_LABELS, UIState } from '../models/types';
 import { Person } from '../services/person.service';
 import { renderCell } from './cell.renderer';
 import { renderHeader } from './header.renderer';
@@ -9,12 +9,10 @@ export function renderSmartList(
   container: HTMLElement,
   data: SmartListData,
   callbacks: TableCallbacks,
+  uiState: UIState,
   lookupValuesMap?: Map<string, string[]>,
   persons?: Person[]
 ): void {
-  let sortConfig: { columnId: string; dir: 'asc'|'desc'|null } = { columnId: '', dir: null };
-  let filters: Record<string, string[]> = {};
-
   const getCellText = (val: any): string => {
     if (val === null || val === undefined) return '';
     if (typeof val === 'object' && !Array.isArray(val) && 'text' in val) return String(val.text);
@@ -148,25 +146,30 @@ export function renderSmartList(
 
     data.columns.forEach((col, idx) => {
       const th = renderHeader(col, callbacks, {
-        sortState: sortConfig.columnId === col.id ? sortConfig.dir : null,
-        activeFilters: filters[col.id] || [],
+        sortState: uiState.sortConfig.columnId === col.id ? uiState.sortConfig.dir : null,
+        activeFilters: uiState.filters[col.id] || [],
         uniqueValues: getUniqueValues(col.id),
         onSortClick: (colId) => {
-          if (sortConfig.columnId === colId) {
-            if (sortConfig.dir === 'asc') sortConfig.dir = 'desc';
-            else if (sortConfig.dir === 'desc') { sortConfig.columnId = ''; sortConfig.dir = null; }
+          if (uiState.sortConfig.columnId === colId) {
+            if (uiState.sortConfig.dir === 'asc') uiState.sortConfig.dir = 'desc';
+            else if (uiState.sortConfig.dir === 'desc') {
+              uiState.sortConfig.columnId = '';
+              uiState.sortConfig.dir = null;
+            }
           } else {
-            sortConfig.columnId = colId;
-            sortConfig.dir = 'asc';
+            uiState.sortConfig.columnId = colId;
+            uiState.sortConfig.dir = 'asc';
           }
+          if (callbacks.onSort) callbacks.onSort(uiState.sortConfig.columnId, uiState.sortConfig.dir);
           renderTableContents();
         },
-        onFilterChange: (colId, values) => {
-          if (!values || values.length === 0 || values.length === getUniqueValues(colId).length) {
-            delete filters[colId];
+        onFilterChange: (colId, vals) => {
+          if (!vals || vals.length === 0 || vals.length === getUniqueValues(colId).length) {
+            delete uiState.filters[colId];
           } else {
-            filters[colId] = values;
+            uiState.filters[colId] = vals;
           }
+          if (callbacks.onFilter) callbacks.onFilter(uiState.filters);
           renderTableContents();
         }
       });
@@ -220,8 +223,8 @@ export function renderSmartList(
     // Process rows
     let processedRows = data.rows.map((row, index) => ({ row, originalIndex: index }));
 
-    Object.keys(filters).forEach(colId => {
-      const allowed = new Set(filters[colId]);
+    Object.keys(uiState.filters).forEach(colId => {
+      const allowed = new Set(uiState.filters[colId]);
       if (allowed.size > 0) {
         processedRows = processedRows.filter(item => {
           const txt = getCellText(item.row[colId]);
@@ -230,20 +233,20 @@ export function renderSmartList(
       }
     });
 
-    if (sortConfig.columnId && sortConfig.dir) {
-      const colDef = data.columns.find(c => c.id === sortConfig.columnId);
+    if (uiState.sortConfig.columnId && uiState.sortConfig.dir) {
+      const colDef = data.columns.find(c => c.id === uiState.sortConfig.columnId);
       processedRows.sort((a, b) => {
-        const valA = getCellText(a.row[sortConfig.columnId]);
-        const valB = getCellText(b.row[sortConfig.columnId]);
+        const valA = getCellText(a.row[uiState.sortConfig.columnId]);
+        const valB = getCellText(b.row[uiState.sortConfig.columnId]);
         
         if (colDef?.type === ColumnType.Number) {
           const nA = Number(valA);
           const nB = Number(valB);
           if (!isNaN(nA) && !isNaN(nB)) {
-            return sortConfig.dir === 'asc' ? nA - nB : nB - nA;
+            return uiState.sortConfig.dir === 'asc' ? nA - nB : nB - nA;
           }
         }
-        return sortConfig.dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return uiState.sortConfig.dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
       });
     }
 

@@ -1,5 +1,5 @@
 import { App, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, TFile } from 'obsidian';
-import { SmartListData } from './models/types';
+import { SmartListData, UIState } from './models/types';
 import { addColumn, addRow, deleteColumn, deleteRow, parseSmartListJson, renameColumn, reorderRows, reorderColumns, serializeSmartListJson, updateCell } from './services/data.service';
 import { getAvailablePersons, getLookupValues, Person } from './services/person.service';
 import { renderSmartList } from './renderers/table.renderer';
@@ -10,6 +10,10 @@ export class SmartListView extends MarkdownRenderChild {
   private isUpdating = false;
   private persons: Person[] = [];
   private lookupValuesMap = new Map<string, string[]>();
+  private uiState: UIState = {
+    sortConfig: { columnId: '', dir: null },
+    filters: {}
+  };
 
   constructor(
     containerEl: HTMLElement,
@@ -60,6 +64,7 @@ export class SmartListView extends MarkdownRenderChild {
         onRowReorder: (from, to) => this.handleDataChange(reorderRows(this.data, from, to)),
         onColumnReorder: (from, to) => this.handleDataChange(reorderColumns(this.data, from, to)),
       },
+      this.uiState,
       this.lookupValuesMap,
       this.persons
     );
