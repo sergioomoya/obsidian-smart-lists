@@ -515,9 +515,18 @@ export function renderCell(
     case ColumnType.Checkbox:
       renderCheckboxCell(container, displayValue as boolean, wrappedOnChange);
       break;
-    case ColumnType.Person:
-      renderPersonCell(container, displayValue as string, wrappedOnChange, persons);
+    case ColumnType.Person: {
+      const allPersons = [...(persons || [])];
+      if (column.options && column.options.length > 0) {
+        column.options.forEach(opt => {
+          if (!allPersons.find(p => p.name.toLowerCase() === opt.label.toLowerCase())) {
+            allPersons.push({ name: opt.label });
+          }
+        });
+      }
+      renderPersonCell(container, displayValue as string, wrappedOnChange, allPersons);
       break;
+    }
     case ColumnType.Url:
       renderUrlCell(container, displayValue as string, wrappedOnChange);
       break;

@@ -96,6 +96,7 @@ export interface TableCallbacks {
   onFilter?: (filters: Record<string, string[]>) => void;
   onSaveFilters?: (uiState: UIState) => void;
   onClearFilters?: () => void;
+  onFathomSync?: () => void;
 }
 
 export interface UIState {

@@ -2,6 +2,7 @@ import { App, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownView, T
 import { SmartListData, UIState } from './models/types';
 import { addColumn, addRow, deleteColumn, deleteRow, parseSmartListJson, renameColumn, reorderRows, reorderColumns, serializeSmartListJson, updateCell } from './services/data.service';
 import { getAvailablePersons, getLookupValues, Person } from './services/person.service';
+import { FathomService } from './services/fathom.service';
 import { renderSmartList } from './renderers/table.renderer';
 import { clearChildren } from './utils/dom.utils';
 import SmartListPlugin from './main';
@@ -95,7 +96,12 @@ export class SmartListView extends MarkdownRenderChild {
           if (this.data.id) this.plugin.activeUIStates.set(this.data.id, this.uiState);
           this.data.defaultUIState = undefined;
           this.handleDataChange(this.data);
-        }
+        },
+        ...(this.plugin.settings.enableFathomSync && {
+          onFathomSync: () => {
+            FathomService.sync(this.ctx.sourcePath, this.data, this.plugin.settings.fathomApiUrl);
+          }
+        })
       },
       this.uiState,
       this.lookupValuesMap,

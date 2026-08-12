@@ -92,6 +92,22 @@ export function renderSmartList(
   controlsContainer.appendChild(saveFilterBtn);
   controlsContainer.appendChild(copyBtn);
 
+  if (callbacks.onFathomSync) {
+    const syncBtn = createElement('button') as HTMLButtonElement;
+    syncBtn.className = 'sl-btn sl-btn-icon';
+    syncBtn.innerHTML = '🔄';
+    syncBtn.title = 'Guardar y Sincronizar con Fathom Notebook';
+    syncBtn.style.padding = '4px 8px';
+    syncBtn.style.fontSize = '12px';
+    syncBtn.style.background = 'transparent';
+    syncBtn.style.border = 'none';
+    syncBtn.style.cursor = 'pointer';
+    addListener(syncBtn, 'click', () => {
+      if (callbacks.onFathomSync) callbacks.onFathomSync();
+    });
+    controlsContainer.appendChild(syncBtn);
+  }
+
   titleBar.appendChild(controlsContainer);
 
   wrapper.appendChild(titleBar);
