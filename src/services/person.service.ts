@@ -34,6 +34,46 @@ const isInSubdirectory = (filePath: string, dirPath: string): boolean => {
   return filePath.startsWith(dirPath + '/');
 };
 
+interface ContactDb {
+  [company: string]: Person[];
+}
+
+async function parseContactsMd(app: App): Promise<ContactDb> {
+  const db: ContactDb = {};
+  const files = app.vault.getFiles();
+  const contactsFile = files.find(f => f.name.toLowerCase() === 'contacts.md');
+  if (!contactsFile) return db;
+
+  try {
+    const content = await app.vault.read(contactsFile);
+    const lines = content.split('\n');
+    let currentCompany = '';
+
+    for (const line of lines) {
+      const headerMatch = line.match(/^##\s+(.+)$/);
+      if (headerMatch) {
+        currentCompany = headerMatch[1].trim().toUpperCase();
+        db[currentCompany] = [];
+        continue;
+      }
+      
+      if (currentCompany && line.startsWith('|') && !line.includes('Nombre | Correo') && !line.includes('---')) {
+        const parts = line.split('|').map(s => s.trim());
+        if (parts.length >= 3) {
+          const name = parts[1];
+          const email = parts[2] === '_sin correo_' ? undefined : parts[2];
+          if (name) {
+            db[currentCompany].push({ name, email, company: currentCompany });
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.error('Error parsing contacts.md', e);
+  }
+  return db;
+}
+
 /**
  * Busca personas en los archivos metadata.json de Fathom Notebook
  * dentro de la carpeta del cliente y escanea bloques smartlist en archivos .md.
@@ -44,6 +84,29 @@ const isInSubdirectory = (filePath: string, dirPath: string): boolean => {
 export const getAvailablePersons = async (app: App, currentFilePath: string): Promise<Person[]> => {
   const personsMap = new Map<string, Person>();
   const currentDir = getDirFromPath(currentFilePath);
+  
+  const db = await parseContactsMd(app);
+  const useContactsMd = Object.keys(db).length > 0;
+
+  if (useContactsMd) {
+    let currentClient = '';
+    const pathParts = currentFilePath.toUpperCase().split('/');
+    for (const part of pathParts) {
+      if (db[part]) {
+        currentClient = part;
+        break;
+      }
+    }
+
+    if (currentClient && db[currentClient]) {
+      db[currentClient].forEach(p => {
+        const normName = normalizeName(p.name);
+        personsMap.set(normName, p);
+      });
+    }
+  }
+
+  const participantsSet = new Set<string>();
   
   const files = app.vault.getFiles();
   
@@ -60,18 +123,21 @@ export const getAvailablePersons = async (app: App, currentFilePath: string): Pr
           json.participants.forEach((p: any) => {
             if (p.name) {
               const normName = normalizeName(p.name);
-              personsMap.set(normName, {
-                name: normName,
-                email: p.email,
-                company: p.domain
-              });
+              participantsSet.add(normName);
+              if (!useContactsMd) {
+                personsMap.set(normName, {
+                  name: normName,
+                  email: p.email,
+                  company: p.domain
+                });
+              }
             }
           });
         }
       } catch (error) {
         console.error(`Error reading/parsing ${file.path}:`, error);
       }
-    } else if (file.extension === 'md') {
+    } else if (!useContactsMd && file.extension === 'md') {
       try {
         const content = await app.vault.read(file);
         const smartListRegex = /```smartlist\n([\s\S]*?)```/g;
@@ -107,6 +173,16 @@ export const getAvailablePersons = async (app: App, currentFilePath: string): Pr
         console.error(`Error processing ${file.path}:`, error);
       }
     }
+  }
+
+  if (useContactsMd) {
+    const mesbookContacts = db['MESBOOK'] || [];
+    mesbookContacts.forEach(p => {
+      const normName = normalizeName(p.name);
+      if (participantsSet.has(normName)) {
+        personsMap.set(normName, p);
+      }
+    });
   }
 
   return Array.from(personsMap.values());
