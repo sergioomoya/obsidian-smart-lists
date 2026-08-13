@@ -51,7 +51,7 @@ async function parseContactsMd(app: App): Promise<ContactDb> {
 
     for (const line of lines) {
       const headerMatch = line.match(/^##\s+(.+)$/);
-      if (headerMatch) {
+      if (headerMatch && headerMatch[1]) {
         currentCompany = headerMatch[1].trim().toUpperCase();
         db[currentCompany] = [];
         continue;
@@ -62,8 +62,9 @@ async function parseContactsMd(app: App): Promise<ContactDb> {
         if (parts.length >= 3) {
           const name = parts[1];
           const email = parts[2] === '_sin correo_' ? undefined : parts[2];
-          if (name) {
-            db[currentCompany].push({ name, email, company: currentCompany });
+          const arr = db[currentCompany];
+          if (name && arr) {
+            arr.push({ name, email, company: currentCompany });
           }
         }
       }
@@ -99,7 +100,7 @@ export const getAvailablePersons = async (app: App, currentFilePath: string): Pr
     }
 
     if (currentClient && db[currentClient]) {
-      db[currentClient].forEach(p => {
+      db[currentClient]?.forEach(p => {
         const normName = normalizeName(p.name);
         personsMap.set(normName, p);
       });
