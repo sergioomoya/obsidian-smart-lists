@@ -82,7 +82,8 @@
     min-width: 120px;
     color: var(--text-normal);
 }
-.sl-th:first-child {
+.sl-th:not(.sl-th-row-num):first-child,
+.sl-th-row-num + .sl-th {
     padding-left: 32px !important;
     min-width: 120px !important;
 }
@@ -98,7 +99,8 @@
     min-width: 120px;
     color: var(--text-normal);
 }
-.sl-td:first-child {
+.sl-td:not(.sl-td-row-num):first-child,
+.sl-td-row-num + .sl-td {
     padding-left: 32px !important;
     min-width: 120px !important;
     overflow: visible !important;
@@ -106,8 +108,11 @@
 
 .sl-th-row-num,
 .sl-td-row-num {
-    width: 40px;
-    min-width: 40px;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
     text-align: center;
     color: var(--text-faint);
 }
@@ -124,6 +129,57 @@
     vertical-align: middle;
     opacity: 0;
     transition: opacity 0.15s ease;
+}
+
+/* ==========================================================================
+   Anchos Inteligentes de Columna
+   ========================================================================== */
+/* Columnas anchas de contenido principal (Tarea, Descripción, Acuerdos, Notas) */
+.sl-th.sl-col-wide,
+.sl-td.sl-col-wide,
+.sl-th[data-col-name*="Tarea" i],
+.sl-td[data-col-name*="Tarea" i],
+.sl-th[data-col-id*="task" i],
+.sl-td[data-col-id*="task" i],
+.sl-th[data-col-name*="Task" i],
+.sl-td[data-col-name*="Task" i],
+.sl-th[data-col-name*="Acuerdo" i],
+.sl-td[data-col-name*="Acuerdo" i],
+.sl-th[data-col-id*="agreement" i],
+.sl-td[data-col-id*="agreement" i],
+.sl-th[data-col-name*="Descripción" i],
+.sl-td[data-col-name*="Descripción" i],
+.sl-th[data-col-name*="Notas" i],
+.sl-td[data-col-name*="Notas" i] {
+    min-width: 380px !important;
+    width: 40% !important;
+}
+
+/* Columnas de texto general */
+.sl-th.sl-col-text:not(.sl-col-wide),
+.sl-td.sl-col-text:not(.sl-col-wide) {
+    min-width: 180px;
+}
+
+/* Columnas compactas (Estado, Prioridad, Fechas) */
+.sl-th[data-col-name*="Estado" i],
+.sl-td[data-col-name*="Estado" i],
+.sl-th[data-col-name*="Status" i],
+.sl-td[data-col-name*="Status" i],
+.sl-th[data-col-name*="Prioridad" i],
+.sl-td[data-col-name*="Prioridad" i],
+.sl-th[data-col-name*="Priority" i],
+.sl-td[data-col-name*="Priority" i],
+.sl-th[data-col-name*="Fecha" i],
+.sl-td[data-col-name*="Fecha" i],
+.sl-th[data-col-name*="Date" i],
+.sl-td[data-col-name*="Date" i],
+.sl-th.sl-col-date,
+.sl-td.sl-col-date,
+.sl-th.sl-col-checkbox,
+.sl-td.sl-col-checkbox {
+    min-width: 110px !important;
+    white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -489,18 +545,6 @@
     word-break: break-word;
 }
 
-.sl-th[data-col-name="Tarea"], .sl-td[data-col-name="Tarea"] {
-    width: 350px;
-    min-width: 350px;
-    max-width: 350px;
-}
-
-.sl-th[data-col-name="Comentarios"], .sl-td[data-col-name="Comentarios"] {
-    width: 250px;
-    min-width: 250px;
-    max-width: 250px;
-}
-
 .sl-date-empty::-webkit-datetime-edit {
     color: transparent;
 }
@@ -678,4 +722,65 @@
 }
 .sl-cancel-btn:hover {
     background-color: var(--background-modifier-hover);
+}
+
+/* ==========================================================================
+   Utility Classes (Extracted from inline styles)
+   ========================================================================== */
+.sl-title-bar-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sl-controls-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sl-btn-action {
+    padding: 4px 8px;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.sl-overflow-x {
+    overflow-x: auto;
+}
+
+.sl-textarea-cell {
+    min-height: 60px;
+}
+
+.sl-pill-empty {
+    background-color: transparent !important;
+    border: 1px dashed #525252 !important;
+    color: #a3a3a3 !important;
+}
+
+.sl-person-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* ==========================================================================
+   Density Modifiers
+   ========================================================================== */
+.sl-density-compact .sl-th {
+    padding: 4px 8px !important;
+}
+.sl-density-compact .sl-th:not(.sl-th-row-num):first-child,
+.sl-density-compact .sl-th-row-num + .sl-th {
+    padding-left: 24px !important;
+}
+
+.sl-density-compact .sl-td {
+    padding: 2px 4px !important;
+}
+.sl-density-compact .sl-td:not(.sl-td-row-num):first-child,
+.sl-density-compact .sl-td-row-num + .sl-td {
+    padding-left: 24px !important;
 }

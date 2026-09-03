@@ -33,8 +33,13 @@ export function renderHeader(
   options: HeaderRenderOptions = {}
 ): HTMLElement {
   const th = createElement('div') as HTMLElement;
-  th.className = 'sl-th';
+  th.className = `sl-th sl-col-${column.type}`;
   th.setAttribute('data-col-name', column.name);
+  th.setAttribute('data-col-id', column.id);
+  th.setAttribute('data-col-type', column.type);
+  if (/tarea|task|descrip|acuerdo|agree|nota/i.test(column.name) || /tarea|task|descrip|acuerdo|agree|nota/i.test(column.id)) {
+    th.classList.add('sl-col-wide');
+  }
 
   const contentDiv = createElement('div') as HTMLElement;
   contentDiv.className = 'sl-header-content';

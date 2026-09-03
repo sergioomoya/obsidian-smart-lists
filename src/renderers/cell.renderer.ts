@@ -1,6 +1,7 @@
 import { ColumnDefinition, CellValue, ColumnType } from '../models/types';
 import { Person } from '../services/person.service';
 import { createElement, setupClickOutside, positionDropdown, clearChildren, addListener } from '../utils/dom.utils';
+import { createDropdown } from '../utils/dropdown.utils';
 
 const KEY_ENTER = 'Enter';
 
@@ -15,10 +16,9 @@ function renderTextCell(container: HTMLElement, value: string, onChange: (val: s
   addListener(displayDiv, 'click', () => {
     clearChildren(container);
     const input = createElement('textarea') as HTMLTextAreaElement;
-    input.className = 'sl-input sl-input-editing';
+    input.className = 'sl-input sl-input-editing sl-textarea-cell';
     input.value = value || '';
     input.style.resize = 'vertical';
-    input.style.minHeight = '60px';
     
     const saveValue = () => {
       const newVal = input.value;
@@ -99,42 +99,20 @@ function renderSelectCell(container: HTMLElement, column: ColumnDefinition, valu
   } else {
     pill.textContent = value || 'Elegir...';
     if (!value) {
-      pill.style.backgroundColor = 'transparent';
-      pill.style.border = '1px dashed #525252';
-      pill.style.color = '#a3a3a3';
+      pill.classList.add('sl-pill-empty');
     }
   }
 
   addListener(pill, 'click', () => {
-    const dropdown = createElement('div') as HTMLElement;
-    dropdown.className = 'sl-dropdown';
-
-    column.options?.forEach(opt => {
-      const item = createElement('div') as HTMLElement;
-      item.className = 'sl-dropdown-item';
-      if (opt.label === value) {
-        item.classList.add('sl-dropdown-item-active');
-      }
-      item.textContent = opt.label;
-      
-      addListener(item, 'click', () => {
-        if (opt.label !== value) {
-          onChange(opt.label);
-        }
-        closeDropdown();
-      });
-      dropdown.appendChild(item);
+    if (!column.options) return;
+    const items = column.options.map(opt => ({
+      label: opt.label,
+      value: opt.label,
+      isActive: opt.label === value
+    }));
+    createDropdown(pill, items, (newVal) => {
+      if (newVal !== value) onChange(newVal);
     });
-
-    document.body.appendChild(dropdown);
-    positionDropdown(dropdown, pill);
-    
-    let cleanupClickOutside: () => void;
-    const closeDropdown = () => {
-      if (cleanupClickOutside) cleanupClickOutside();
-      if (dropdown.parentElement) document.body.removeChild(dropdown);
-    };
-    cleanupClickOutside = setupClickOutside(dropdown, closeDropdown, pill);
   });
 
   container.appendChild(pill);
@@ -153,9 +131,7 @@ function renderMultiSelectCell(container: HTMLElement, column: ColumnDefinition,
     const pill = createElement('div') as HTMLElement;
     pill.className = 'sl-pill';
     pill.textContent = 'Añadir...';
-    pill.style.backgroundColor = 'transparent';
-    pill.style.border = '1px dashed #525252';
-    pill.style.color = '#a3a3a3';
+    pill.classList.add('sl-pill-empty');
     pillsContainer.appendChild(pill);
   } else {
     currentValues.forEach(val => {
@@ -291,8 +267,7 @@ function renderCheckboxCell(container: HTMLElement, value: boolean, onChange: (v
  */
 function renderPersonCell(container: HTMLElement, value: string, onChange: (val: string) => void, persons: Person[] = []): void {
   const wrapper = createElement('div') as HTMLElement;
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
+  wrapper.className = 'sl-person-wrapper';
 
   const icon = createElement('span') as HTMLElement;
   icon.className = 'sl-person-icon';
@@ -417,35 +392,14 @@ function renderLookupCell(container: HTMLElement, value: string, onChange: (val:
   pill.textContent = value || '';
 
   addListener(pill, 'click', () => {
-    const dropdown = createElement('div') as HTMLElement;
-    dropdown.className = 'sl-dropdown';
-
-    lookupValues.forEach(optVal => {
-      const item = createElement('div') as HTMLElement;
-      item.className = 'sl-dropdown-item';
-      if (optVal === value) {
-        item.classList.add('sl-dropdown-item-active');
-      }
-      item.textContent = optVal;
-      
-      addListener(item, 'click', () => {
-        if (optVal !== value) {
-          onChange(optVal);
-        }
-        closeDropdown();
-      });
-      dropdown.appendChild(item);
+    const items = lookupValues.map(optVal => ({
+      label: optVal,
+      value: optVal,
+      isActive: optVal === value
+    }));
+    createDropdown(pill, items, (newVal) => {
+      if (newVal !== value) onChange(newVal);
     });
-
-    document.body.appendChild(dropdown);
-    positionDropdown(dropdown, pill);
-
-    let cleanupClickOutside: () => void;
-    const closeDropdown = () => {
-      if (cleanupClickOutside) cleanupClickOutside();
-      if (dropdown.parentElement) document.body.removeChild(dropdown);
-    };
-    cleanupClickOutside = setupClickOutside(dropdown, closeDropdown, pill);
   });
 
   container.appendChild(pill);

@@ -269,3 +269,58 @@ export const renameColumn = (
     columns: newColumns
   };
 };
+
+export interface ProcessedRow {
+  row: RowData;
+  originalIndex: number;
+}
+
+export function getCellDisplayText(val: CellValue | undefined): string {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object' && !Array.isArray(val) && 'text' in val) return String((val as any).text);
+  if (Array.isArray(val)) return val.join(', ');
+  return String(val);
+}
+
+export function applyFilters(
+  rows: RowData[],
+  filters: Record<string, string[]>
+): ProcessedRow[] {
+  let processed = rows.map((row, index) => ({ row, originalIndex: index }));
+  
+  for (const [colId, allowedValues] of Object.entries(filters)) {
+    if (allowedValues.length > 0) {
+      const allowed = new Set(allowedValues);
+      processed = processed.filter(item => {
+        const txt = getCellDisplayText(item.row[colId]);
+        return allowed.has(txt);
+      });
+    }
+  }
+  
+  return processed;
+}
+
+export function applySorting(
+  rows: ProcessedRow[],
+  sortColumnId: string,
+  sortDir: 'asc' | 'desc' | null,
+  columns: ColumnDefinition[]
+): ProcessedRow[] {
+  if (!sortColumnId || !sortDir) return rows;
+  
+  const colDef = columns.find(c => c.id === sortColumnId);
+  return [...rows].sort((a, b) => {
+    const valA = getCellDisplayText(a.row[sortColumnId]);
+    const valB = getCellDisplayText(b.row[sortColumnId]);
+    
+    if (colDef?.type === ColumnType.Number) {
+      const nA = Number(valA);
+      const nB = Number(valB);
+      if (!isNaN(nA) && !isNaN(nB)) {
+        return sortDir === 'asc' ? nA - nB : nB - nA;
+      }
+    }
+    return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+  });
+}

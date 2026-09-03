@@ -105,7 +105,8 @@ export class SmartListView extends MarkdownRenderChild {
       },
       this.uiState,
       this.lookupValuesMap,
-      this.persons
+      this.persons,
+      this.plugin.settings
     );
   }
 

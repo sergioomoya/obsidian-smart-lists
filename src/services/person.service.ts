@@ -141,7 +141,7 @@ export const getAvailablePersons = async (app: App, currentFilePath: string): Pr
     } else if (!useContactsMd && file.extension === 'md') {
       try {
         const content = await app.vault.read(file);
-        const smartListRegex = /```smartlist\n([\s\S]*?)```/g;
+        const smartListRegex = /```smartlist[\r\n]+([\s\S]*?)```/g;
         let match;
         
         while ((match = smartListRegex.exec(content)) !== null) {
@@ -230,7 +230,7 @@ export const getLookupValues = async (
 
   try {
     const content = await app.vault.read(targetFile);
-    const smartListRegex = /```smartlist\n([\s\S]*?)```/g;
+    const smartListRegex = /```smartlist[\r\n]+([\s\S]*?)```/g;
     let match;
     
     while ((match = smartListRegex.exec(content)) !== null) {

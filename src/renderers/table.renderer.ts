@@ -1,9 +1,13 @@
 import { SmartListData, TableCallbacks, ColumnDefinition, ColumnType, COLUMN_TYPE_LABELS, UIState } from '../models/types';
+import { SmartListSettings } from '../settings';
 import { Person } from '../services/person.service';
 import { renderCell } from './cell.renderer';
 import { renderHeader } from './header.renderer';
 import { generateColumnId } from '../utils/id.utils';
 import { createElement, clearChildren, addListener, setupClickOutside } from '../utils/dom.utils';
+import { applyFilters, applySorting, getCellDisplayText } from '../services/data.service';
+import { attachDragHandlers, attachDragHandle } from '../utils/dnd.utils';
+import { copyTableToClipboard } from '../utils/clipboard.utils';
 
 export function renderSmartList(
   container: HTMLElement,
@@ -11,17 +15,11 @@ export function renderSmartList(
   callbacks: TableCallbacks,
   uiState: UIState,
   lookupValuesMap?: Map<string, string[]>,
-  persons?: Person[]
+  persons?: Person[],
+  settings?: SmartListSettings
 ): void {
-  const getCellText = (val: any): string => {
-    if (val === null || val === undefined) return '';
-    if (typeof val === 'object' && !Array.isArray(val) && 'text' in val) return String(val.text);
-    if (Array.isArray(val)) return val.join(', ');
-    return String(val);
-  };
-
   const getUniqueValues = (columnId: string) => {
-    const vals = data.rows.map(r => getCellText(r[columnId]));
+    const vals = data.rows.map(r => getCellDisplayText(r[columnId]));
     return Array.from(new Set(vals));
   };
 
@@ -29,13 +27,13 @@ export function renderSmartList(
 
   const wrapper = createElement('div') as HTMLElement;
   wrapper.className = 'sl-container';
+  if (settings?.tableDensity === 'compact') {
+    wrapper.classList.add('sl-density-compact');
+  }
 
   // Title bar
   const titleBar = createElement('div') as HTMLElement;
-  titleBar.className = 'sl-title-bar';
-  titleBar.style.display = 'flex';
-  titleBar.style.alignItems = 'center';
-  titleBar.style.justifyContent = 'space-between';
+  titleBar.className = 'sl-title-bar sl-title-bar-flex';
 
   const title = createElement('h3') as HTMLElement;
   title.className = 'sl-title';
@@ -43,32 +41,20 @@ export function renderSmartList(
   titleBar.appendChild(title);
 
   const controlsContainer = createElement('div') as HTMLElement;
-  controlsContainer.style.display = 'flex';
-  controlsContainer.style.gap = '8px';
-  controlsContainer.style.alignItems = 'center';
+  controlsContainer.className = 'sl-controls-container';
 
   const clearBtn = createElement('button') as HTMLButtonElement;
-  clearBtn.className = 'sl-btn sl-btn-icon';
+  clearBtn.className = 'sl-btn-action sl-btn-icon';
   clearBtn.innerHTML = '✖️';
   clearBtn.title = 'Limpiar filtros (Borrar filtros activos)';
-  clearBtn.style.padding = '4px 8px';
-  clearBtn.style.fontSize = '12px';
-  clearBtn.style.background = 'transparent';
-  clearBtn.style.border = 'none';
-  clearBtn.style.cursor = 'pointer';
   addListener(clearBtn, 'click', () => {
     if (callbacks.onClearFilters) callbacks.onClearFilters();
   });
 
   const saveFilterBtn = createElement('button') as HTMLButtonElement;
-  saveFilterBtn.className = 'sl-btn sl-btn-icon';
+  saveFilterBtn.className = 'sl-btn-action sl-btn-icon';
   saveFilterBtn.innerHTML = '💾';
   saveFilterBtn.title = 'Guardar filtro actual por defecto';
-  saveFilterBtn.style.padding = '4px 8px';
-  saveFilterBtn.style.fontSize = '12px';
-  saveFilterBtn.style.background = 'transparent';
-  saveFilterBtn.style.border = 'none';
-  saveFilterBtn.style.cursor = 'pointer';
   addListener(saveFilterBtn, 'click', () => {
     if (callbacks.onSaveFilters) callbacks.onSaveFilters(uiState);
     const originalText = saveFilterBtn.innerHTML;
@@ -79,14 +65,9 @@ export function renderSmartList(
   });
 
   const copyBtn = createElement('button') as HTMLButtonElement;
-  copyBtn.className = 'sl-btn sl-btn-icon';
+  copyBtn.className = 'sl-btn-action sl-btn-icon';
   copyBtn.innerHTML = '📋';
   copyBtn.title = 'Copiar tabla renderizada al portapapeles';
-  copyBtn.style.padding = '4px 8px';
-  copyBtn.style.fontSize = '12px';
-  copyBtn.style.background = 'transparent';
-  copyBtn.style.border = 'none';
-  copyBtn.style.cursor = 'pointer';
   
   controlsContainer.appendChild(clearBtn);
   controlsContainer.appendChild(saveFilterBtn);
@@ -94,14 +75,9 @@ export function renderSmartList(
 
   if (callbacks.onFathomSync) {
     const syncBtn = createElement('button') as HTMLButtonElement;
-    syncBtn.className = 'sl-btn sl-btn-icon';
+    syncBtn.className = 'sl-btn-action sl-btn-icon';
     syncBtn.innerHTML = '🔄';
     syncBtn.title = 'Guardar y Sincronizar con Fathom Notebook';
-    syncBtn.style.padding = '4px 8px';
-    syncBtn.style.fontSize = '12px';
-    syncBtn.style.background = 'transparent';
-    syncBtn.style.border = 'none';
-    syncBtn.style.cursor = 'pointer';
     addListener(syncBtn, 'click', () => {
       if (callbacks.onFathomSync) callbacks.onFathomSync();
     });
@@ -113,8 +89,7 @@ export function renderSmartList(
   wrapper.appendChild(titleBar);
 
   const tableWrapper = createElement('div') as HTMLElement;
-  tableWrapper.className = 'sl-table-wrapper';
-  tableWrapper.style.overflowX = 'auto';
+  tableWrapper.className = 'sl-table-wrapper sl-overflow-x';
   
   wrapper.appendChild(tableWrapper);
 
@@ -204,6 +179,13 @@ export function renderSmartList(
     const trHead = createElement('div') as HTMLElement;
     trHead.className = 'sl-tr';
 
+    if (settings?.showRowNumbers) {
+      const thNum = createElement('div') as HTMLElement;
+      thNum.className = 'sl-th sl-th-row-num';
+      thNum.textContent = '#';
+      trHead.appendChild(thNum);
+    }
+
     data.columns.forEach((col, idx) => {
       const th = renderHeader(col, callbacks, {
         sortState: uiState.sortConfig.columnId === col.id ? uiState.sortConfig.dir : null,
@@ -235,37 +217,18 @@ export function renderSmartList(
       });
       const iconSpan = th.querySelector('.sl-header-icon');
       if (iconSpan) {
-        addListener(iconSpan as HTMLElement, 'mousedown', () => { th.draggable = true; });
-        addListener(iconSpan as HTMLElement, 'mouseup', () => { th.draggable = false; });
-        addListener(iconSpan as HTMLElement, 'mouseleave', () => { th.draggable = false; });
+        attachDragHandle(iconSpan as HTMLElement, th);
       }
 
-      addListener(th, 'dragstart', (e: DragEvent) => {
-        if (e.dataTransfer) {
-          e.dataTransfer.setData('application/json', JSON.stringify({type: 'col', index: idx}));
-          e.dataTransfer.effectAllowed = 'move';
-        }
-        th.classList.add('sl-col-dragging');
-      });
-      addListener(th, 'dragover', (e: DragEvent) => {
-        e.preventDefault();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-        th.classList.add('sl-col-drag-over');
-      });
-      addListener(th, 'dragleave', () => th.classList.remove('sl-col-drag-over'));
-      addListener(th, 'drop', (e: DragEvent) => {
-        e.preventDefault();
-        th.classList.remove('sl-col-drag-over');
-        if (e.dataTransfer) {
-          try {
-            const dragData = JSON.parse(e.dataTransfer.getData('application/json'));
-            if (dragData.type === 'col' && typeof dragData.index === 'number' && dragData.index !== idx) {
-              if (callbacks.onColumnReorder) callbacks.onColumnReorder(dragData.index, idx);
-            }
-          } catch (err) {}
+      attachDragHandlers(th, {
+        type: 'col',
+        index: idx,
+        draggingClass: 'sl-col-dragging',
+        dragOverClass: 'sl-col-drag-over',
+        onReorder: (from, to) => {
+          if (callbacks.onColumnReorder) callbacks.onColumnReorder(from, to);
         }
       });
-      addListener(th, 'dragend', () => th.classList.remove('sl-col-dragging'));
 
       const insertColBtn = createElement('div') as HTMLElement;
       insertColBtn.className = 'sl-insert-col-btn';
@@ -286,35 +249,8 @@ export function renderSmartList(
     thead.appendChild(trHead);
     table.appendChild(thead);
 
-    // Process rows
-    let processedRows = data.rows.map((row, index) => ({ row, originalIndex: index }));
-
-    Object.keys(uiState.filters).forEach(colId => {
-      const allowed = new Set(uiState.filters[colId]);
-      if (allowed.size > 0) {
-        processedRows = processedRows.filter(item => {
-          const txt = getCellText(item.row[colId]);
-          return allowed.has(txt);
-        });
-      }
-    });
-
-    if (uiState.sortConfig.columnId && uiState.sortConfig.dir) {
-      const colDef = data.columns.find(c => c.id === uiState.sortConfig.columnId);
-      processedRows.sort((a, b) => {
-        const valA = getCellText(a.row[uiState.sortConfig.columnId]);
-        const valB = getCellText(b.row[uiState.sortConfig.columnId]);
-        
-        if (colDef?.type === ColumnType.Number) {
-          const nA = Number(valA);
-          const nB = Number(valB);
-          if (!isNaN(nA) && !isNaN(nB)) {
-            return uiState.sortConfig.dir === 'asc' ? nA - nB : nB - nA;
-          }
-        }
-        return uiState.sortConfig.dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      });
-    }
+    let processedRows = applyFilters(data.rows, uiState.filters);
+    processedRows = applySorting(processedRows, uiState.sortConfig.columnId, uiState.sortConfig.dir, data.columns);
 
     // Tbody
     const tbody = createElement('div') as HTMLElement;
@@ -322,43 +258,38 @@ export function renderSmartList(
     
     currentRows = processedRows;
 
-    processedRows.forEach(item => {
+    processedRows.forEach((item, visualIndex) => {
       const { row, originalIndex } = item;
       const tr = createElement('div') as HTMLElement;
       tr.className = 'sl-row';
       tr.setAttribute('data-index', originalIndex.toString());
 
-      addListener(tr, 'dragstart', (e: DragEvent) => {
-        if (e.dataTransfer) {
-          e.dataTransfer.setData('application/json', JSON.stringify({type: 'row', index: originalIndex}));
-          e.dataTransfer.effectAllowed = 'move';
-        }
-        tr.classList.add('sl-row-dragging');
-      });
-      addListener(tr, 'dragover', (e: DragEvent) => {
-        e.preventDefault();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-        tr.classList.add('sl-row-drag-over');
-      });
-      addListener(tr, 'dragleave', () => tr.classList.remove('sl-row-drag-over'));
-      addListener(tr, 'drop', (e: DragEvent) => {
-        e.preventDefault();
-        tr.classList.remove('sl-row-drag-over');
-        if (e.dataTransfer) {
-          try {
-            const dragData = JSON.parse(e.dataTransfer.getData('application/json'));
-            if (dragData.type === 'row' && typeof dragData.index === 'number' && dragData.index !== originalIndex) {
-              if (callbacks.onRowReorder) callbacks.onRowReorder(dragData.index, originalIndex);
-            }
-          } catch (err) {}
+      if (settings?.showRowNumbers) {
+        const tdNum = createElement('div') as HTMLElement;
+        tdNum.className = 'sl-td sl-td-row-num';
+        tdNum.textContent = (visualIndex + 1).toString();
+        tr.appendChild(tdNum);
+      }
+
+      attachDragHandlers(tr, {
+        type: 'row',
+        index: originalIndex,
+        draggingClass: 'sl-row-dragging',
+        dragOverClass: 'sl-row-drag-over',
+        onReorder: (from, to) => {
+          if (callbacks.onRowReorder) callbacks.onRowReorder(from, to);
         }
       });
-      addListener(tr, 'dragend', () => tr.classList.remove('sl-row-dragging'));
 
       data.columns.forEach((col, colIndex) => {
         const td = createElement('div') as HTMLElement;
-        td.className = 'sl-td';
+        td.className = `sl-td sl-col-${col.type}`;
         td.setAttribute('data-col-name', col.name);
+        td.setAttribute('data-col-id', col.id);
+        td.setAttribute('data-col-type', col.type);
+        if (/tarea|task|descrip|acuerdo|agree|nota/i.test(col.name) || /tarea|task|descrip|acuerdo|agree|nota/i.test(col.id)) {
+          td.classList.add('sl-col-wide');
+        }
         
         if (colIndex === 0) {
           td.style.position = 'relative';
@@ -367,9 +298,7 @@ export function renderSmartList(
           dragHandle.className = 'sl-drag-handle';
           dragHandle.innerHTML = '⋮⋮';
           
-          addListener(dragHandle, 'mousedown', () => { tr.draggable = true; });
-          addListener(dragHandle, 'mouseup', () => { tr.draggable = false; });
-          addListener(dragHandle, 'mouseleave', () => { tr.draggable = false; });
+          attachDragHandle(dragHandle, tr);
           td.appendChild(dragHandle);
 
           const insertRowBtn = createElement('div') as HTMLElement;
@@ -427,63 +356,14 @@ export function renderSmartList(
 
   renderTableContents();
 
-  renderTableContents();
-
   addListener(copyBtn, 'click', async () => {
-    let html = '<table style="border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; background-color: #1e1e1e; color: #d4d4d4; font-size: 13px; width: 100%; border: 1px solid #333;">';
-    html += '<thead><tr>';
-    const plainLines: string[] = [];
-    const plainHeaders: string[] = [];
-    data.columns.forEach(col => {
-      html += `<th style="padding: 10px 12px; background-color: #111827; color: #9ca3af; text-align: left; font-weight: 600; border-bottom: 1px solid #374151; white-space: nowrap;">${col.name}</th>`;
-      plainHeaders.push(col.name);
-    });
-    html += '</tr></thead><tbody>';
-    plainLines.push(plainHeaders.join('\t'));
-
-    currentRows.forEach(item => {
-      html += '<tr>';
-      const plainRow: string[] = [];
-      data.columns.forEach(col => {
-        const text = getCellText(item.row[col.id]);
-        plainRow.push(text.replace(/\t/g, ' ').replace(/\n/g, ' '));
-        
-        const htmlText = text.replace(/\n/g, '<br>');
-        let cellHtml = htmlText;
-
-        if (text && (col.type === ColumnType.Select || col.type === ColumnType.MultiSelect)) {
-          const vals = col.type === ColumnType.MultiSelect ? text.split(', ') : [text];
-          cellHtml = vals.map(v => {
-            const opt = col.options?.find(o => o.label === v);
-            const color = opt?.color || '#4b5563';
-            return `<span style="background-color: ${color}; color: #ffffff; padding: 3px 10px; border-radius: 12px; font-size: 12px; display: inline-block; font-weight: 500; margin-right: 4px; white-space: nowrap;">${v}</span>`;
-          }).join('');
-        } else if (text && col.type === ColumnType.Person) {
-          const vals = text.split(', ');
-          cellHtml = vals.map(v => `<span style="background-color: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; padding: 3px 10px; border-radius: 12px; font-size: 12px; display: inline-block; font-weight: 500; margin-right: 4px; white-space: nowrap;">👤 ${v}</span>`).join('');
-        }
-        
-        html += `<td style="padding: 10px 12px; border-bottom: 1px solid #374151; vertical-align: top;">${cellHtml}</td>`;
-      });
-      html += '</tr>';
-      plainLines.push(plainRow.join('\t'));
-    });
-    html += '</tbody></table>';
-
-    try {
-      const clipboardItem = new ClipboardItem({
-        'text/html': new Blob([html], { type: 'text/html' }),
-        'text/plain': new Blob([plainLines.join('\n')], { type: 'text/plain' })
-      });
-      await navigator.clipboard.write([clipboardItem]);
-      
+    const success = await copyTableToClipboard(data.columns, currentRows);
+    if (success) {
       const originalText = copyBtn.innerHTML;
       copyBtn.innerHTML = '✅ Copiado';
       setTimeout(() => {
         copyBtn.innerHTML = originalText;
       }, 2000);
-    } catch (err) {
-      console.error('Error copying to clipboard', err);
     }
   });
 
