@@ -5,6 +5,7 @@ import { serializeSmartListJson } from './services/data.service';
 import { generateId } from './utils/id.utils';
 import { SmartListSettings, DEFAULT_SETTINGS, SmartListSettingTab } from './settings';
 import { createDefaultSmartList } from './models/defaults';
+import { FathomService } from './services/fathom.service';
 
 export default class SmartListPlugin extends Plugin {
   settings!: SmartListSettings;
@@ -31,6 +32,40 @@ export default class SmartListPlugin extends Plugin {
 
         const block = `\`\`\`smartlist\n${serializeSmartListJson(defaultData)}\n\`\`\`\n`;
         editor.replaceSelection(block);
+      }
+    });
+
+    this.addCommand({
+      id: 'fathom-reprocess-meeting-custom',
+      name: 'Fathom: Reprocesar sesión actual (Personalizada)',
+      checkCallback: (checking: boolean) => {
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!activeFile) return false;
+        const info = FathomService.getMeetingInfoFromPath(activeFile.path);
+        if (!info) return false;
+
+        if (!checking) {
+          import('./modals/reprocess.modal').then(({ ReprocessModal }) => {
+            new ReprocessModal(this.app, activeFile.path, this.settings.fathomApiUrl).open();
+          });
+        }
+        return true;
+      }
+    });
+
+    this.addCommand({
+      id: 'fathom-reprocess-meeting-full',
+      name: 'Fathom: Reprocesar sesión actual (Completa)',
+      checkCallback: (checking: boolean) => {
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!activeFile) return false;
+        const info = FathomService.getMeetingInfoFromPath(activeFile.path);
+        if (!info) return false;
+
+        if (!checking) {
+          FathomService.reprocess(activeFile.path, { full: true }, this.settings.fathomApiUrl);
+        }
+        return true;
       }
     });
   }

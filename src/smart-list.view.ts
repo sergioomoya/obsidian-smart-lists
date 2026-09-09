@@ -100,7 +100,14 @@ export class SmartListView extends MarkdownRenderChild {
         ...(this.plugin.settings.enableFathomSync && {
           onFathomSync: () => {
             FathomService.sync(this.ctx.sourcePath, this.data, this.plugin.settings.fathomApiUrl);
-          }
+          },
+          ...(FathomService.getMeetingInfoFromPath(this.ctx.sourcePath) && {
+            onFathomReprocess: () => {
+              import('./modals/reprocess.modal').then(({ ReprocessModal }) => {
+                new ReprocessModal(this.app, this.ctx.sourcePath, this.plugin.settings.fathomApiUrl).open();
+              });
+            }
+          })
         })
       },
       this.uiState,

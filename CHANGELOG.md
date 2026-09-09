@@ -1,5 +1,9 @@
 # Changelog - Smart Lists (Add-on Obsidian)
 
+## [0.1.1] - 2026-09-08
+### Añadido
+- **Integración y Modal de Reprocesamiento de Fathom**: Botón interactivo `⚡` en la cabecera de la tabla y comandos de paleta para reprocesar sesiones de reunión (minutas, acciones, contactos, transcripción, vídeo) directamente desde Obsidian.
+
 ## [0.1.0] - 2026-07-30
 ### Añadido
 - Interfaz nativa tipo base de datos inyectada en bloques ````smartlist`.

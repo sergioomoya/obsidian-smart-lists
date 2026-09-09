@@ -84,6 +84,17 @@ export function renderSmartList(
     controlsContainer.appendChild(syncBtn);
   }
 
+  if (callbacks.onFathomReprocess) {
+    const reprocessBtn = createElement('button') as HTMLButtonElement;
+    reprocessBtn.className = 'sl-btn-action sl-btn-icon';
+    reprocessBtn.innerHTML = '⚡';
+    reprocessBtn.title = 'Reprocesar sesión con Fathom (Minutas, PDA, Vídeo...)';
+    addListener(reprocessBtn, 'click', () => {
+      if (callbacks.onFathomReprocess) callbacks.onFathomReprocess();
+    });
+    controlsContainer.appendChild(reprocessBtn);
+  }
+
   titleBar.appendChild(controlsContainer);
 
   wrapper.appendChild(titleBar);
