@@ -3,7 +3,6 @@
 	"version": "0.1.0",
 	"description": "Tablas interactivas tipo SharePoint integradas en Markdown para Obsidian.",
 	"main": "main.js",
-	
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
@@ -19,9 +18,9 @@
 	"author": "Sergio Moya",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^22.0.0",
-		"esbuild": "^0.25.0",
-		"obsidian": "latest",
+		"@types/node": "^22.20.2",
+		"esbuild": "^0.28.2",
+		"obsidian": "^1.13.1",
 		"typescript": "^5.7.0"
 	}
 }
